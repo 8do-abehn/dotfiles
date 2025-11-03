@@ -1,0 +1,35 @@
+# Homebrew Bundle File
+# Install with: brew bundle --file=~/8do/dotfiles/homebrew/Brewfile
+
+# CLI Tools
+brew "bitwarden-cli"
+cask "claude-code"
+brew "curl"
+brew "ddrescue"
+brew "git"
+brew "mas"
+brew "tree"
+brew "wget"
+
+# Applications
+cask "bitwarden"
+cask "brave-browser"
+cask "claude"
+cask "docker-desktop"
+cask "microsoft-teams"
+cask "minecraft"
+cask "slack"
+cask "spotify"
+cask "tailscale-app"
+cask "vscodium"
+
+# Mac App Store Apps (requires: brew install mas)
+# Find app IDs with: mas search "app name"
+# Example:
+# mas "Xcode", id: 497799835
+mas "stts", id: 1187772509
+
+# Add more packages as needed
+# brew "package-name"
+# cask "app-name"
+# mas "App Name", id: 123456789

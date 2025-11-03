@@ -1,0 +1,27 @@
+# SSH Configuration
+# Managed by dotfiles
+
+# GitHub
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/github_ed25519
+    AddKeysToAgent yes
+    UseKeychain yes
+
+# Proxmox hosts (pve00*)
+Host pve00*
+    User root
+    # Uncomment and customize as needed:
+    # Port 22
+    # IdentityFile ~/.ssh/id_ed25519
+    # StrictHostKeyChecking ask
+    # UserKnownHostsFile ~/.ssh/known_hosts
+
+# Add more host configurations below
+# Example:
+# Host myserver
+#     HostName 192.168.1.100
+#     User myuser
+#     Port 2222
+#     IdentityFile ~/.ssh/myserver_key
