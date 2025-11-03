@@ -39,6 +39,9 @@ export LSCOLORS=GxFxCxDxBxegedabagaced
 # Editor preference
 export EDITOR=nano
 
+# GPG configuration for commit signing
+export GPG_TTY=$(tty)
+
 # Prompt customization
 autoload -Uz vcs_info
 precmd() { vcs_info }
