@@ -44,6 +44,27 @@ ln -sf "$DOTFILES_DIR/zsh/.zshrc" "$HOME/.zshrc"
 
 echo ""
 
+# Setup Claude Code configuration
+echo "Setting up Claude Code configuration..."
+mkdir -p "$HOME/.claude"
+
+# Backup existing Claude Code files if they exist
+if [[ -f "$HOME/.claude/CLAUDE.md" ]] && [[ ! -L "$HOME/.claude/CLAUDE.md" ]]; then
+    echo "Backing up existing CLAUDE.md to CLAUDE.md.backup"
+    cp "$HOME/.claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md.backup"
+fi
+
+if [[ -f "$HOME/.claude/settings.json" ]] && [[ ! -L "$HOME/.claude/settings.json" ]]; then
+    echo "Backing up existing settings.json to settings.json.backup"
+    cp "$HOME/.claude/settings.json" "$HOME/.claude/settings.json.backup"
+fi
+
+# Symlink Claude Code files
+ln -sf "$DOTFILES_DIR/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+ln -sf "$DOTFILES_DIR/claude/settings.json" "$HOME/.claude/settings.json"
+
+echo ""
+
 # Install Homebrew packages
 if [[ -f "$DOTFILES_DIR/homebrew/Brewfile" ]]; then
     echo "Installing Homebrew packages..."
@@ -68,5 +89,18 @@ else
 fi
 
 echo ""
+
+# Set desktop background
+if [[ -d "$DOTFILES_DIR/desktops" ]] && [[ -f "$DOTFILES_DIR/macos/set-desktop.sh" ]]; then
+    read -p "Do you want to set a desktop background? (y/n) " -n 1 -r
+    echo ""
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        bash "$DOTFILES_DIR/macos/set-desktop.sh"
+    else
+        echo "Skipping desktop background"
+    fi
+    echo ""
+fi
+
 echo "Installation complete!"
 echo "Please restart your terminal or run: source ~/.zshrc"

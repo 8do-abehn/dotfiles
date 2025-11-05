@@ -1,0 +1,5 @@
+- never put claude in code commits
+- all my dotfiles should be idempotent
+- never mention claude in git commits
+- let's review commits to github for secrets and security issues
+- I use vi as an editor, not nano
