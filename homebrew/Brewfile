@@ -2,6 +2,7 @@
 # Install with: brew bundle --file=~/8do/dotfiles/homebrew/Brewfile
 
 # CLI Tools
+brew "ansible"
 brew "bitwarden-cli"
 cask "claude-code"
 brew "curl"
@@ -12,6 +13,7 @@ brew "tree"
 brew "wget"
 
 # Applications
+cask "balenaetcher"
 cask "bitwarden"
 cask "brave-browser"
 cask "claude"
