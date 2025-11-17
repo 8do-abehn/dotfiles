@@ -102,5 +102,26 @@ if [[ -d "$DOTFILES_DIR/desktops" ]] && [[ -f "$DOTFILES_DIR/macos/set-desktop.s
     echo ""
 fi
 
+# Setup SwiftBar plugins
+if [[ -d "$DOTFILES_DIR/swiftbar" ]]; then
+    echo "Setting up SwiftBar plugins..."
+    mkdir -p "$HOME/swiftbar"
+
+    # Symlink all SwiftBar scripts
+    for script in "$DOTFILES_DIR/swiftbar"/*.sh; do
+        if [[ -f "$script" ]]; then
+            script_name=$(basename "$script")
+            ln -sf "$script" "$HOME/swiftbar/$script_name"
+            echo "Linked $script_name"
+        fi
+    done
+
+    echo ""
+    echo "SwiftBar setup complete!"
+    echo "To configure API key for claude-usage widget:"
+    echo "  security add-generic-password -a \"\${USER}\" -s \"anthropic-api-key\" -w"
+    echo ""
+fi
+
 echo "Installation complete!"
 echo "Please restart your terminal or run: source ~/.zshrc"
