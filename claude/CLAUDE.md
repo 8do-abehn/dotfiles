@@ -1,10 +1,13 @@
-- never put claude in code commits
 - all my dotfiles should be idempotent
 - never mention claude in git commits
 - let's review commits to github for secrets and security issues
-- always create a feature branch and PR instead of committing directly to main
 - I use vi as an editor, not nano
 - suggest faster ways, always give a few options
+
+## Git
+- always create a feature branch and PR instead of committing directly to main
+- don't use git amend - prefer separate commits and squash merge on PRs
+- never mention claude in commit messages or PR descriptions
 
 ## Ansible (homelab/beginner-friendly)
 - test playbooks with `--check --diff` before running
@@ -22,14 +25,15 @@
 - warn me before committing anything with secrets
 
 ## Shell Scripts
-- always include error handling (`set -e`)
+- always include error handling (`set -euo pipefail`)
 - prefer readable code over clever one-liners
 - add comments explaining why, not what
 - make scripts idempotent when possible
+- exclude zsh files from shellcheck (different syntax)
 
 ## macOS/Dotfiles
 - use brew bundle for package management (Brewfile)
 - symlink configs, never copy them
 - organize Brewfile by category (CLI tools, apps, etc)
 - document setup steps in README files
-- don't use git amend
+- run `./status.sh` to check sync after pulling on a new machine
