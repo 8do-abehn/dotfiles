@@ -10,6 +10,8 @@ brew "ddrescue"
 brew "gh"
 brew "git"
 brew "mas"
+brew "pre-commit"
+brew "shellcheck"
 brew "tree"
 brew "wget"
 
