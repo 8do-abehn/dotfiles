@@ -37,7 +37,7 @@ export CLICOLOR=1
 export LSCOLORS=GxFxCxDxBxegedabagaced
 
 # Editor preference
-export EDITOR=nano
+export EDITOR=vim
 
 # GPG configuration for commit signing
 export GPG_TTY=$(tty)
