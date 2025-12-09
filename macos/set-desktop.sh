@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Set Desktop Background Script
 # Run with: bash ~/8do/dotfiles/macos/set-desktop.sh [image-name]
@@ -29,7 +30,7 @@ else
     echo ""
     ls -1 "$DESKTOPS_DIR"
     echo ""
-    read -p "Enter image filename: " IMAGE_NAME
+    read -rp "Enter image filename: " IMAGE_NAME
     IMAGE_PATH="$DESKTOPS_DIR/$IMAGE_NAME"
 
     if [[ ! -f "$IMAGE_PATH" ]]; then

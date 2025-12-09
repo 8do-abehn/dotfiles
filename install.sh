@@ -3,7 +3,7 @@
 # Dotfiles installation script
 # Run with: bash ~/8do/dotfiles/install.sh
 
-set -e
+set -euo pipefail
 
 DOTFILES_DIR="$HOME/8do/dotfiles"
 
@@ -23,6 +23,7 @@ if ! command -v brew &> /dev/null; then
 
     # Add Homebrew to PATH for Apple Silicon Macs
     if [[ -f "/opt/homebrew/bin/brew" ]]; then
+        # shellcheck disable=SC2016
         echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
         eval "$(/opt/homebrew/bin/brew shellenv)"
     fi

@@ -4,7 +4,7 @@
 # Imports PGP keys from Bitwarden and configures Git signing
 # Run with: bash ~/8do/dotfiles/git/pgp-setup.sh
 
-set -e
+set -euo pipefail
 
 ITEM_NAME="keybase.io"
 TEMP_DIR=$(mktemp -d)
@@ -28,7 +28,7 @@ fi
 # Check Bitwarden login status
 echo "Checking Bitwarden login status..."
 if ! bw login --check &> /dev/null; then
-    read -p "Enter your Bitwarden email: " BITWARDEN_EMAIL
+    read -rp "Enter your Bitwarden email: " BITWARDEN_EMAIL
     echo "Logging into Bitwarden as $BITWARDEN_EMAIL..."
     bw login "$BITWARDEN_EMAIL"
 else

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # System updates requiring softwareupdate
 # Run with: bash ~/8do/dotfiles/macos/system-updates.sh

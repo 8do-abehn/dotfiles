@@ -3,7 +3,7 @@
 # Git and GitHub SSH Setup Script
 # Run with: bash ~/8do/dotfiles/git/setup.sh
 
-set -e
+set -euo pipefail
 
 GITHUB_EMAIL="177274210+8do-abehn@users.noreply.github.com"
 SSH_KEY_PATH="$HOME/.ssh/github_ed25519"
@@ -34,14 +34,14 @@ else
             GIT_USERNAME="$CURRENT_NAME"
             echo "Keeping existing configuration"
         else
-            read -p "Enter your Git username (for commits) [$CURRENT_NAME]: " GIT_USERNAME
+            read -rp "Enter your Git username (for commits) [$CURRENT_NAME]: " GIT_USERNAME
             GIT_USERNAME="${GIT_USERNAME:-$CURRENT_NAME}"
             git config --global user.name "$GIT_USERNAME"
             git config --global user.email "$GITHUB_EMAIL"
             echo "Git config updated ✓"
         fi
     else
-        read -p "Enter your Git username (for commits): " GIT_USERNAME
+        read -rp "Enter your Git username (for commits): " GIT_USERNAME
         if [[ -z "$GIT_USERNAME" ]]; then
             echo "Error: Git username is required"
             exit 1
@@ -115,7 +115,7 @@ echo ""
 
 # Copy public key to clipboard
 if command -v pbcopy &> /dev/null; then
-    cat "${SSH_KEY_PATH}.pub" | pbcopy
+    pbcopy < "${SSH_KEY_PATH}.pub"
     echo "✓ Public key copied to clipboard!"
 else
     echo "Public key:"

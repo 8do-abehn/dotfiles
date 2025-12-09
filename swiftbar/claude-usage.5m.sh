@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 #
 # <xbar.title>Claude API Usage</xbar.title>
 # <xbar.version>v1.0</xbar.version>
@@ -17,11 +18,11 @@
 # Run this command once to store your API key securely:
 #   security add-generic-password -a "${USER}" -s "anthropic-api-key" -w
 # Then use this line (already uncommented):
-API_KEY=$(security find-generic-password -a "${USER}" -s "anthropic-api-key" -w 2>/dev/null)
+API_KEY=$(security find-generic-password -a "${USER}" -s "anthropic-api-key" -w 2>/dev/null) || API_KEY=""
 #
 # METHOD 2: Hardcoded (less secure, easier for testing)
 # Uncomment and add your key:
-# API_KEY="sk-ant-your-api-key-here"
+# API_KEY="sk-ant-your-api-key-here"  # pragma: allowlist secret
 #
 # METHOD 3: Environment variable
 # Set ANTHROPIC_API_KEY in your shell environment, then uncomment:
@@ -29,7 +30,7 @@ API_KEY=$(security find-generic-password -a "${USER}" -s "anthropic-api-key" -w 
 #
 # ============================================================
 
-if [ "$API_KEY" = "your-api-key-here" ] || [ -z "$API_KEY" ]; then
+if [ "${API_KEY:-}" = "your-api-key-here" ] || [ -z "${API_KEY:-}" ]; then
     echo "⚠️ Configure API key"
     echo "---"
     echo "Edit script to add your Anthropic API key"
@@ -39,7 +40,7 @@ fi
 
 # Make minimal API request to get rate limit headers
 # Using a very small request to minimize token usage
-RESPONSE=$(curl -s -i -X POST https://api.anthropic.com/v1/messages \
+if ! RESPONSE=$(curl -s -i -X POST https://api.anthropic.com/v1/messages \
     -H "x-api-key: $API_KEY" \
     -H "anthropic-version: 2023-06-01" \
     -H "content-type: application/json" \
@@ -47,10 +48,7 @@ RESPONSE=$(curl -s -i -X POST https://api.anthropic.com/v1/messages \
         "model": "claude-3-5-haiku-20241022",
         "max_tokens": 1,
         "messages": [{"role": "user", "content": "hi"}]
-    }' 2>&1)
-
-# Check if request failed
-if [ $? -ne 0 ]; then
+    }' 2>&1); then
     echo "❌ API Error"
     echo "---"
     echo "Failed to connect to Anthropic API"
@@ -64,7 +62,7 @@ TOKENS_RESET=$(echo "$RESPONSE" | grep -i "anthropic-ratelimit-tokens-reset:" | 
 
 REQUESTS_LIMIT=$(echo "$RESPONSE" | grep -i "anthropic-ratelimit-requests-limit:" | head -1 | awk '{print $2}' | tr -d '\r')
 REQUESTS_REMAINING=$(echo "$RESPONSE" | grep -i "anthropic-ratelimit-requests-remaining:" | head -1 | awk '{print $2}' | tr -d '\r')
-REQUESTS_RESET=$(echo "$RESPONSE" | grep -i "anthropic-ratelimit-requests-reset:" | head -1 | awk '{print $2}' | tr -d '\r')
+# REQUESTS_RESET captured but not displayed (available for future use)
 
 # Check if we got valid data
 if [ -z "$TOKENS_REMAINING" ]; then

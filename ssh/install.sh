@@ -3,7 +3,7 @@
 # SSH Config Installation Script
 # Run with: bash ~/8do/dotfiles/ssh/install.sh
 
-set -e
+set -euo pipefail
 
 DOTFILES_SSH_CONFIG="$HOME/8do/dotfiles/ssh/config"
 SSH_CONFIG="$HOME/.ssh/config"

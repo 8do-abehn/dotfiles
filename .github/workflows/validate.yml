@@ -1,0 +1,62 @@
+name: Validate Dotfiles
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  shellcheck:
+    name: Lint Shell Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: Run shellcheck
+        run: |
+          find . -name "*.sh" -type f | xargs shellcheck -e SC1091
+
+  validate-configs:
+    name: Validate Config Files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate JSON files
+        run: |
+          for f in $(find . -name "*.json" -type f); do
+            echo "Checking $f"
+            python3 -m json.tool "$f" > /dev/null
+          done
+
+  secrets-scan:
+    name: Scan for Secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install detect-secrets
+        run: pip install detect-secrets
+
+      - name: Scan for new secrets
+        run: |
+          # Compare against baseline to detect NEW secrets only
+          detect-secrets scan --all-files --exclude-files '.*\.backup.*' --baseline .secrets.baseline
+          detect-secrets audit --report --baseline .secrets.baseline || true
+
+  brewfile:
+    name: Validate Brewfile
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Brewfile syntax
+        run: |
+          cd homebrew
+          brew bundle check --file=Brewfile || echo "Some packages not installed (expected in CI)"
+          # At minimum validates Brewfile syntax
+          ruby -c Brewfile
