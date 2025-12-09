@@ -124,5 +124,13 @@ if [[ -d "$DOTFILES_DIR/swiftbar" ]]; then
     echo ""
 fi
 
+# Setup pre-commit hooks for dotfiles repo
+if command -v pre-commit &> /dev/null; then
+    echo "Setting up pre-commit hooks..."
+    (cd "$DOTFILES_DIR" && pre-commit install)
+    echo "Pre-commit hooks installed ✓"
+    echo ""
+fi
+
 echo "Installation complete!"
 echo "Please restart your terminal or run: source ~/.zshrc"
