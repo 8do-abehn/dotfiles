@@ -32,3 +32,4 @@
 - symlink configs, never copy them
 - organize Brewfile by category (CLI tools, apps, etc)
 - document setup steps in README files
+- don't use git amend
