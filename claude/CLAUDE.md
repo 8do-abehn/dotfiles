@@ -2,6 +2,7 @@
 - all my dotfiles should be idempotent
 - never mention claude in git commits
 - let's review commits to github for secrets and security issues
+- always create a feature branch and PR instead of committing directly to main
 - I use vi as an editor, not nano
 - suggest faster ways, always give a few options
 
