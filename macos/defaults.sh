@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # macOS defaults configuration
 # Run with: bash ~/8do/dotfiles/macos/defaults.sh
