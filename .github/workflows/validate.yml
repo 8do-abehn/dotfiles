@@ -13,12 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install shellcheck
-        run: sudo apt-get install -y shellcheck
-
       - name: Run shellcheck
-        run: |
-          find . -name "*.sh" -type f | xargs shellcheck -e SC1091
+        uses: ludeeus/action-shellcheck@master
+        with:
+          ignore_paths: .git zsh
+          ignore_names: "*.zshrc"
+          severity: warning
 
   validate-configs:
     name: Validate Config Files
@@ -55,8 +55,4 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Check Brewfile syntax
-        run: |
-          cd homebrew
-          brew bundle check --file=Brewfile || echo "Some packages not installed (expected in CI)"
-          # At minimum validates Brewfile syntax
-          ruby -c Brewfile
+        run: ruby -c homebrew/Brewfile
