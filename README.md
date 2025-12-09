@@ -146,7 +146,7 @@ This checks:
 
 ### Pre-commit Hooks
 
-Install pre-commit hooks for automatic validation:
+Pre-commit hooks are automatically installed when you run `install.sh`. To install manually:
 
 ```bash
 brew install pre-commit shellcheck
@@ -158,6 +158,12 @@ Hooks run automatically on `git commit` and check:
 - Secret detection (detect-secrets)
 - JSON/YAML validation
 - File formatting
+
+To skip hooks when needed (e.g., WIP commits):
+
+```bash
+git commit --no-verify  # or: git commit -n
+```
 
 ### CI
 
