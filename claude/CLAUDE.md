@@ -8,6 +8,7 @@
 - always create a feature branch and PR instead of committing directly to main
 - don't use git amend - prefer separate commits and squash merge on PRs
 - never mention claude in commit messages or PR descriptions
+- don't include Co-Authored-By lines in commits
 
 ## Ansible (homelab/beginner-friendly)
 - test playbooks with `--check --diff` before running
