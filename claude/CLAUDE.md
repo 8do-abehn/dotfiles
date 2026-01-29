@@ -1,5 +1,4 @@
 - all my dotfiles should be idempotent
-- never mention claude in git commits
 - let's review commits to github for secrets and security issues
 - I use vi as an editor, not nano
 - suggest faster ways, always give a few options
@@ -23,7 +22,7 @@
 - prefer Bitwarden CLI (`bw`) over macOS Keychain for cross-platform
 - use ansible-vault for sensitive files in repos
 - never hardcode API keys or passwords
-- warn me before committing anything with secrets
+- warn before committing PII or secrets to repos or anything published publicly
 
 ## Shell Scripts
 - always include error handling (`set -euo pipefail`)
