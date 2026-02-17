@@ -13,8 +13,10 @@ brew "mas"
 brew "pandoc"
 brew "pre-commit"
 brew "shellcheck"
+brew "swiftlint"
 brew "tree"
 brew "wget"
+brew "xcodegen"
 
 # Applications
 cask "balenaetcher"
@@ -36,8 +38,7 @@ cask "vscodium"
 
 # Mac App Store Apps (requires: brew install mas)
 # Find app IDs with: mas search "app name"
-# Example:
-# mas "Xcode", id: 497799835
+mas "Xcode", id: 497799835
 mas "stts", id: 1187772509
 
 # Add more packages as needed
