@@ -48,3 +48,9 @@ precmd() { vcs_info }
 zstyle ':vcs_info:git:*' formats ' (%b)'
 setopt PROMPT_SUBST
 PROMPT='%F{green}%n@%m%f:%F{blue}%~%f%F{yellow}${vcs_info_msg_0_}%f$ '
+
+# Created by `pipx` on 2026-02-12 20:17:02
+export PATH="$PATH:/Users/adambehn/.local/bin"
+
+# Source secrets (API keys, tokens) — not tracked in git
+[[ -f ~/.secrets ]] && source ~/.secrets
