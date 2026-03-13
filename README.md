@@ -1,3 +1,6 @@
+[![Validate Dotfiles](https://github.com/8do-abehn/dotfiles/actions/workflows/validate.yml/badge.svg)](https://github.com/8do-abehn/dotfiles/actions/workflows/validate.yml)
+[![Gitleaks](https://img.shields.io/badge/protected%20by-gitleaks-blue)](https://github.com/gitleaks/gitleaks-action)
+
 # Dotfiles
 
 Personal dotfiles configuration for macOS.
