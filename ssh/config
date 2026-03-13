@@ -10,7 +10,7 @@ Host github.com
     UseKeychain yes
 
 # Homelab - Proxmox cluster
-Host pve* 10.150.10.*
+Host jelly* pve* 10.150.10.* 10.150.60.*
     User root
     IdentityFile ~/.ssh/8do
     StrictHostKeyChecking accept-new

@@ -124,6 +124,12 @@ if [[ -d "$DOTFILES_DIR/swiftbar" ]]; then
     echo ""
 fi
 
+# Configure local git hooks
+echo "Configuring git hooks..."
+(cd "$DOTFILES_DIR" && git config core.hooksPath .githooks)
+echo "Git hooks configured ✓"
+echo ""
+
 # Setup pre-commit hooks for dotfiles repo
 if command -v pre-commit &> /dev/null; then
     echo "Setting up pre-commit hooks..."
