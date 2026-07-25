@@ -64,6 +64,13 @@ fi
 ln -sf "$DOTFILES_DIR/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
 ln -sf "$DOTFILES_DIR/claude/settings.json" "$HOME/.claude/settings.json"
 
+# Symlink the whole skills directory so new skills are tracked automatically
+if [[ -d "$HOME/.claude/skills" ]] && [[ ! -L "$HOME/.claude/skills" ]]; then
+    echo "Backing up existing skills directory to skills.backup"
+    mv "$HOME/.claude/skills" "$HOME/.claude/skills.backup"
+fi
+ln -sfn "$DOTFILES_DIR/claude/skills" "$HOME/.claude/skills"
+
 echo ""
 
 # Install Homebrew packages

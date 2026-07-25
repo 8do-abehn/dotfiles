@@ -47,6 +47,8 @@ check_symlink "$HOME/.claude/CLAUDE.md" "$SCRIPT_DIR/claude/CLAUDE.md" '~/.claud
 # shellcheck disable=SC2088
 check_symlink "$HOME/.claude/settings.json" "$SCRIPT_DIR/claude/settings.json" '~/.claude/settings.json'
 # shellcheck disable=SC2088
+check_symlink "$HOME/.claude/skills" "$SCRIPT_DIR/claude/skills" '~/.claude/skills'
+# shellcheck disable=SC2088
 check_symlink "$HOME/.ssh/config" "$SCRIPT_DIR/ssh/config" '~/.ssh/config'
 echo
 
