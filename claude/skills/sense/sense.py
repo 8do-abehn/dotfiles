@@ -151,16 +151,26 @@ def cmd_usage(sense: Senseable, args):
     return out
 
 
+def is_deleted(d: dict) -> bool:
+    # Deleted devices stay in the API's device list, flagged rather than removed
+    return d.get("tags", {}).get("UserDeleted") == "true"
+
+
 def cmd_devices(sense: Senseable, args):
     rows = sense.get_discovered_device_data()
+    if not args.all:
+        rows = [d for d in rows if not is_deleted(d)]
     keep = ("id", "name", "icon", "tags", "last_state", "last_state_time")
-    return [{k: d.get(k) for k in keep if k in d} for d in rows]
+    return [{k: d.get(k) for k in keep if k in d} | {"deleted": is_deleted(d)} for d in rows]
 
 
 def cmd_device(sense: Senseable, args):
     rows = sense.get_discovered_device_data()
     q = args.name.lower()
-    match = [d for d in rows if q == d["id"].lower() or q in d.get("name", "").lower()]
+    # An exact id always wins; name matches skip deleted devices so a rename doesn't collide with its ghost
+    match = [d for d in rows if q == d["id"].lower()] or [
+        d for d in rows if q in d.get("name", "").lower() and not is_deleted(d)
+    ]
     if not match:
         die(f"no device matching '{args.name}'")
     if len(match) > 1:
@@ -198,7 +208,8 @@ def main():
     s.add_argument("scale", nargs="?", default="day", choices=SCALES)
     s.add_argument("--date", help="any date inside the period, YYYY-MM-DD (default: current period)")
     s.add_argument("--top", type=int, default=15, help="max devices to list")
-    sub.add_parser("devices", help="discovered devices")
+    s = sub.add_parser("devices", help="discovered devices (deleted ones hidden)")
+    s.add_argument("--all", action="store_true", help="include devices deleted in the app")
     s = sub.add_parser("device", help="detail for one device (name substring or id)")
     s.add_argument("name")
     sub.add_parser("always-on", help="always-on baseline info")

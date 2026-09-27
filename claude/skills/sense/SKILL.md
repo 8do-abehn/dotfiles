@@ -25,7 +25,7 @@ All commands print JSON.
 |---|---|
 | `now` | live watts, solar watts, voltage per leg, Hz, devices currently on with watts |
 | `usage [day\|week\|month\|year\|cycle] [--date YYYY-MM-DD] [--top N]` | kWh total (plus solar/grid split if solar exists) and per-device kWh for that period |
-| `devices` | every discovered device: id, name, tags, last state |
+| `devices [--all]` | discovered devices: id, name, tags, last state, `deleted` flag. Deleted ones are hidden unless `--all` |
 | `device <name-or-id>` | detail for one device (name matches as substring) |
 | `always-on` | always-on baseline |
 | `timeline [-n 30]` | recent on/off events |
@@ -72,5 +72,8 @@ Never ask for, type, or pass the Sense password yourself. Tokens are cached in
   a Jan 1 start works and gives per-device monthly totals in `device_breakdown`.
 - Device models are learned from specific appliances. After an appliance is replaced,
   its old device goes quiet and the new one's energy lands in "Other" or a wrong device.
+- Deleting a device in the app keeps it in the device list with `UserDeleted: "true"`,
+  but drops it from `history/usage` `device_breakdown`, so its past kWh vanish from the
+  API (the app still shows archived stats). Snapshot history before recommending deletes.
 - The API is unofficial and can change. On unexpected errors or empty fields, show
   the raw error and try `raw` against the endpoint before guessing at a cause.
