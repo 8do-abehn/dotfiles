@@ -15,29 +15,34 @@ SwiftBar plugins for macOS menu bar widgets.
    ln -sf ~/8do/dotfiles/swiftbar/flashforge-printer.1m.sh ~/swiftbar/flashforge-printer.1m.sh
    ```
 
-3. **Configure API key** (one-time setup):
-   ```bash
-   # This will prompt you to enter your Anthropic API key securely
-   security add-generic-password -a "${USER}" -s "anthropic-api-key" -w
-   ```
-
-4. **Set SwiftBar plugin folder:**
+3. **Set SwiftBar plugin folder:**
    - Open SwiftBar preferences
    - Set plugin folder to: `~/swiftbar`
 
 ## Plugins
 
 ### claude-usage.5m.sh
-Displays Claude API rate limit information in the menu bar.
+Shows Claude Code usage for the current 5-hour block, read from Claude Code's
+local logs (`~/.claude/projects`) by [ccusage](https://github.com/ccusage/ccusage).
 
-- Shows token/request usage percentage
-- Green/yellow/red indicator based on remaining quota
+- Menu bar: `✳ $32.26 · 3h13m` (block cost so far, time until it resets), or `✳ idle`
+- Dropdown: block window, projected cost and burn rate, token breakdown, models
+- No API key, no API calls, no network (`--offline` uses ccusage's bundled prices)
 - Refreshes every 5 minutes
-- Click for detailed view
 
-**Requirements:**
-- Anthropic API key stored in macOS Keychain (see setup step 3)
-- Internet connection
+The dollar figure is what those tokens would cost at API prices, not a bill.
+Anthropic doesn't publish Pro/Max plan limits, so this can't show a percentage of
+your plan; run `/usage` inside Claude Code for that.
+
+Caveats: ccusage starts each block on the hour, so the reset time is an estimate.
+A model newer than ccusage's bundled price table is counted as $0 until you
+`brew upgrade ccusage`.
+
+**Requirements:** `ccusage` and `jq` (both in the Brewfile)
+
+The old version of this plugin read an API key from the Keychain. If an old
+machine still has that entry, remove it with
+`security delete-generic-password -a "${USER}" -s anthropic-api-key`.
 
 **To update refresh rate:**
 Rename file: `.5m.sh` = 5 minutes, `.1m.sh` = 1 minute, etc.

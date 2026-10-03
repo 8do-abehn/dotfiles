@@ -1,116 +1,105 @@
 #!/bin/bash
 set -euo pipefail
 #
-# <xbar.title>Claude API Usage</xbar.title>
-# <xbar.version>v1.0</xbar.version>
-# <xbar.author>Your Name</xbar.author>
-# <xbar.author.github>yourusername</xbar.author.github>
-# <xbar.desc>Displays Claude API rate limit info</xbar.desc>
-# <xbar.dependencies>curl,jq</xbar.dependencies>
+# <xbar.title>Claude Code Usage</xbar.title>
+# <xbar.version>v2.0</xbar.version>
+# <xbar.desc>Shows the current Claude Code 5-hour usage block from local logs</xbar.desc>
+# <xbar.dependencies>ccusage,jq</xbar.dependencies>
 #
-# Metadata tells SwiftBar/xbar to refresh every 5 minutes
+# Refreshes every 5 minutes (the .5m in the filename).
+#
+# Reads Claude Code's own logs (~/.claude/projects) through ccusage, so it needs
+# no API key, makes no API calls and costs nothing. The dollar figure is what the
+# tokens would cost at API prices, not a bill; plan limits aren't published, so
+# /usage inside Claude Code is the only place to see a percentage of your plan.
 
-# ============================================================
-# CONFIGURATION - API Key Setup (Choose ONE method)
-# ============================================================
-#
-# METHOD 1 (Recommended): macOS Keychain
-# Run this command once to store your API key securely:
-#   security add-generic-password -a "${USER}" -s "anthropic-api-key" -w
-# Then use this line (already uncommented):
-API_KEY=$(security find-generic-password -a "${USER}" -s "anthropic-api-key" -w 2>/dev/null) || API_KEY=""
-#
-# METHOD 2: Hardcoded (less secure, easier for testing)
-# Uncomment and add your key:
-# API_KEY="sk-ant-your-api-key-here"  # pragma: allowlist secret
-#
-# METHOD 3: Environment variable
-# Set ANTHROPIC_API_KEY in your shell environment, then uncomment:
-# API_KEY="${ANTHROPIC_API_KEY}"
-#
-# ============================================================
+# SwiftBar starts plugins with a bare PATH that misses Homebrew. Appended rather
+# than prepended so an existing PATH entry still wins.
+export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
 
-if [ "${API_KEY:-}" = "your-api-key-here" ] || [ -z "${API_KEY:-}" ]; then
-    echo "⚠️ Configure API key"
+# printf needs a known locale: SwiftBar gives none (no thousands separators), and
+# a comma-decimal one like de_DE makes printf reject "32.58" and print $0,00
+export LC_ALL=en_US.UTF-8
+
+# jq ships with macOS 15 and later; older systems need it from Homebrew
+for tool in ccusage jq; do
+    if ! command -v "$tool" >/dev/null; then
+        echo "✳ ?"
+        echo "---"
+        echo "$tool not found: brew install $tool"
+        exit 0
+    fi
+done
+
+# --offline uses ccusage's bundled price table so a refresh never waits on a
+# pricing download. stderr is kept apart so warnings can't corrupt the JSON.
+err=$(mktemp)
+trap 'rm -f "$err"' EXIT
+if ! json=$(ccusage blocks --active --json --offline 2>"$err"); then
+    echo "✳ ! | color=red"
     echo "---"
-    echo "Edit script to add your Anthropic API key"
-    echo "Path: $0"
+    echo "ccusage failed:"
+    # each line of the message becomes a plain menu item
+    head -5 "$err" | tr -d '|'
     exit 0
 fi
 
-# Make minimal API request to get rate limit headers
-# Using a very small request to minimize token usage
-if ! RESPONSE=$(curl -s -i -X POST https://api.anthropic.com/v1/messages \
-    -H "x-api-key: $API_KEY" \
-    -H "anthropic-version: 2023-06-01" \
-    -H "content-type: application/json" \
-    -d '{
-        "model": "claude-3-5-haiku-20241022",
-        "max_tokens": 1,
-        "messages": [{"role": "user", "content": "hi"}]
-    }' 2>&1); then
-    echo "❌ API Error"
+# One line per active block, fields split on the ASCII unit separator: unlike a
+# tab it isn't whitespace to `read`, so an empty field can't shift the ones after
+# it. Model names come from log files, so they're reduced to safe characters
+# before SwiftBar sees them.
+if ! block=$(jq -r '
+    .blocks[0] // empty
+    | [
+        (.costUSD // 0),
+        ((.endTime | sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601) - now | floor),
+        (.startTime | sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601),
+        (.endTime | sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601),
+        (.tokenCounts.inputTokens // 0 | floor),
+        (.tokenCounts.outputTokens // 0 | floor),
+        (.tokenCounts.cacheCreationInputTokens // 0 | floor),
+        (.tokenCounts.cacheReadInputTokens // 0 | floor),
+        (.burnRate.costPerHour // 0),
+        (.projection.totalCost // .costUSD // 0),
+        ((.models // []) | map(select(. != "<synthetic>") | gsub("[^A-Za-z0-9.-]"; "")) | join(" "))
+      ]
+    | map(tostring) | join("\u001f")' <<<"$json" 2>/dev/null); then
+    echo "✳ ! | color=red"
     echo "---"
-    echo "Failed to connect to Anthropic API"
-    exit 1
+    echo "Couldn't parse ccusage output"
+    exit 0
 fi
 
-# Extract rate limit headers (case-insensitive)
-TOKENS_LIMIT=$(echo "$RESPONSE" | grep -i "anthropic-ratelimit-tokens-limit:" | head -1 | awk '{print $2}' | tr -d '\r')
-TOKENS_REMAINING=$(echo "$RESPONSE" | grep -i "anthropic-ratelimit-tokens-remaining:" | head -1 | awk '{print $2}' | tr -d '\r')
-TOKENS_RESET=$(echo "$RESPONSE" | grep -i "anthropic-ratelimit-tokens-reset:" | head -1 | awk '{print $2}' | tr -d '\r')
-
-REQUESTS_LIMIT=$(echo "$RESPONSE" | grep -i "anthropic-ratelimit-requests-limit:" | head -1 | awk '{print $2}' | tr -d '\r')
-REQUESTS_REMAINING=$(echo "$RESPONSE" | grep -i "anthropic-ratelimit-requests-remaining:" | head -1 | awk '{print $2}' | tr -d '\r')
-# REQUESTS_RESET captured but not displayed (available for future use)
-
-# Check if we got valid data
-if [ -z "$TOKENS_REMAINING" ]; then
-    echo "❌ No data"
+if [[ -z "$block" ]]; then
+    echo "✳ idle | color=gray"
     echo "---"
-    echo "Could not parse rate limits"
-    echo "Check API key validity"
-    exit 1
+    echo "No Claude Code activity in the last 5 hours"
+    echo "---"
+    echo "Refresh | refresh=true"
+    exit 0
 fi
 
-# Calculate percentages
-TOKENS_PERCENT=$((TOKENS_REMAINING * 100 / TOKENS_LIMIT))
-REQUESTS_PERCENT=$((REQUESTS_REMAINING * 100 / REQUESTS_LIMIT))
+IFS=$'\x1f' read -r cost secs_left start end input output cache_write cache_read \
+    burn projected models <<<"$block"
 
-# Choose emoji based on remaining percentage
-if [ "$TOKENS_PERCENT" -gt 50 ]; then
-    EMOJI="🟢"
-elif [ "$TOKENS_PERCENT" -gt 20 ]; then
-    EMOJI="🟡"
-else
-    EMOJI="🔴"
-fi
+# printf rounds, and %'d adds thousands separators (thanks to LC_ALL above)
+money() { printf '$%.2f' "$1"; }
+count() { printf "%'d" "$1"; }
 
-# Format numbers with commas for readability
-format_number() {
-    printf "%'d" "$1" 2>/dev/null || echo "$1"
-}
+secs_left=$(( secs_left > 0 ? secs_left : 0 ))
+left="$((secs_left / 3600))h$(printf '%02d' $((secs_left % 3600 / 60)))m"
 
-TOKENS_REMAINING_FMT=$(format_number "$TOKENS_REMAINING")
-TOKENS_LIMIT_FMT=$(format_number "$TOKENS_LIMIT")
-REQUESTS_REMAINING_FMT=$(format_number "$REQUESTS_REMAINING")
-REQUESTS_LIMIT_FMT=$(format_number "$REQUESTS_LIMIT")
-
-# Calculate reset time in human-readable format
-if [ -n "$TOKENS_RESET" ]; then
-    RESET_DATE=$(date -r "$TOKENS_RESET" "+%H:%M:%S" 2>/dev/null || echo "Unknown")
-else
-    RESET_DATE="Unknown"
-fi
-
-# Menu bar output (first line)
-echo "$EMOJI ${TOKENS_PERCENT}%"
-
-# Dropdown menu (after ---)
+echo "✳ $(money "$cost") · $left"
 echo "---"
-echo "Tokens: ${TOKENS_REMAINING_FMT} / ${TOKENS_LIMIT_FMT} (${TOKENS_PERCENT}%)"
-echo "Requests: ${REQUESTS_REMAINING_FMT} / ${REQUESTS_LIMIT_FMT} (${REQUESTS_PERCENT}%)"
-echo "Resets at: ${RESET_DATE}"
+echo "Block: $(date -r "$start" '+%H:%M')–$(date -r "$end" '+%H:%M') · resets in $left"
+echo "Cost (API-price equivalent): $(money "$cost")"
+echo "At current pace: $(money "$projected") by reset · $(money "$burn")/h"
+echo "---"
+echo "Input: $(count "$input") tokens"
+echo "Output: $(count "$output") tokens"
+echo "Cache write: $(count "$cache_write") tokens"
+echo "Cache read: $(count "$cache_read") tokens"
+echo "---"
+echo "Models: ${models:-none}"
 echo "---"
 echo "Refresh | refresh=true"
-echo "Console | href=https://console.anthropic.com"

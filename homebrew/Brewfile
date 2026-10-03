@@ -4,11 +4,13 @@
 # CLI Tools
 brew "ansible"
 brew "bitwarden-cli"
+brew "ccusage"  # Claude Code usage from local logs (SwiftBar plugin)
 cask "claude-code"
 brew "curl"
 brew "ddrescue"
 brew "gh"
 brew "git"
+brew "jq"  # also in macOS 15+, listed for older systems
 brew "mas"
 brew "pandoc"
 brew "pre-commit"
