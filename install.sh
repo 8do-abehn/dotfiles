@@ -126,8 +126,6 @@ if [[ -d "$DOTFILES_DIR/swiftbar" ]]; then
 
     echo ""
     echo "SwiftBar setup complete!"
-    echo "To configure API key for claude-usage widget:"
-    echo "  security add-generic-password -a \"\${USER}\" -s \"anthropic-api-key\" -w"
     echo ""
 fi
 

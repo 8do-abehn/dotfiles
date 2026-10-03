@@ -27,7 +27,8 @@ dotfiles/
 │   ├── CLAUDE.md               # Claude Code global instructions
 │   └── settings.json           # Claude Code settings
 ├── swiftbar/
-│   ├── claude-usage.5m.sh      # Claude API usage monitor widget
+│   ├── claude-usage.5m.sh      # Claude Code usage widget (via ccusage)
+│   ├── flashforge-printer.1m.sh # 3D printer status widget
 │   └── README.md               # SwiftBar plugin docs
 ├── desktops/
 │   └── *.jpg                   # Desktop background images
