@@ -4,3 +4,6 @@
 
 # Python bytecode caches from skill scripts
 __pycache__/
+
+# Claude skills synced from Anthropic: proprietary and rewritten by the sync
+claude/skills/synced/
