@@ -1,3 +1,6 @@
 # Secrets — never commit API keys or tokens
 .secrets
 *.secrets
+
+# Python bytecode caches from skill scripts
+__pycache__/
