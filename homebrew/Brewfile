@@ -28,6 +28,7 @@ cask "claude"
 cask "docker-desktop"
 cask "microsoft-teams"
 cask "minecraft"
+cask "openscad@snapshot"  # stable cask disabled 2026-09-01 (fails Gatekeeper)
 cask "reflect"
 cask "slack"
 cask "spotify"
