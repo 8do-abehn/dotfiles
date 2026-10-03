@@ -69,13 +69,17 @@ mkdir -p "$STATE_DIR"
 last=$(cat "$STATE_FILE" 2>/dev/null || true)
 echo "$machine" > "$STATE_FILE"
 if [[ "$last" == "BUILDING_FROM_SD" && "$machine" != "BUILDING_FROM_SD" ]]; then
+    outcome="$machine"
+    [[ "$machine" == "BUILDING_COMPLETED" ]] && outcome="finished"
     # values go in through the environment so they are never parsed as AppleScript
-    PF_FILE="${file:-print}" PF_STATUS="$machine" osascript \
+    PF_FILE="${file:-print}" PF_STATUS="$outcome" osascript \
         -e 'display notification ((system attribute "PF_FILE") & " is now " & (system attribute "PF_STATUS")) with title "Printer" sound name "Glass"' || true
 fi
 
 case "$machine" in
     BUILDING_FROM_SD) echo "🖨 ${pct:-?}% · L${layer:-?}" ;;
+    # the printer holds this state until the print is cleared on its screen
+    BUILDING_COMPLETED) echo "🖨 ✓ done | color=green" ;;
     READY)            echo "🖨 idle | color=gray" ;;
     *)                echo "🖨 ${machine} | color=orange" ;;
 esac
