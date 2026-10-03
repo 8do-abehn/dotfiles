@@ -21,12 +21,15 @@ export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
 # a comma-decimal one like de_DE makes printf reject "32.58" and print $0,00
 export LC_ALL=en_US.UTF-8
 
-if ! command -v ccusage >/dev/null; then
-    echo "✳ ?"
-    echo "---"
-    echo "ccusage not found: brew install ccusage"
-    exit 0
-fi
+# jq ships with macOS 15 and later; older systems need it from Homebrew
+for tool in ccusage jq; do
+    if ! command -v "$tool" >/dev/null; then
+        echo "✳ ?"
+        echo "---"
+        echo "$tool not found: brew install $tool"
+        exit 0
+    fi
+done
 
 # --offline uses ccusage's bundled price table so a refresh never waits on a
 # pricing download. stderr is kept apart so warnings can't corrupt the JSON.

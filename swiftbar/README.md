@@ -38,7 +38,7 @@ Caveats: ccusage starts each block on the hour, so the reset time is an estimate
 A model newer than ccusage's bundled price table is counted as $0 until you
 `brew upgrade ccusage`.
 
-**Requirements:** `ccusage` (in the Brewfile: `brew install ccusage`)
+**Requirements:** `ccusage` and `jq` (both in the Brewfile)
 
 The old version of this plugin read an API key from the Keychain. If an old
 machine still has that entry, remove it with
