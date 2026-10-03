@@ -47,14 +47,19 @@ if [[ -z "$status_raw" ]]; then
     exit 0
 fi
 
+# Anything from the printer is untrusted: a filename on a USB stick can hold
+# quotes or "|", which would otherwise inject AppleScript or SwiftBar menu actions.
 machine=$(field MachineStatus "$status_raw")
+machine=${machine//[^A-Z_]/}
 file=$(field CurrentFile "$status_raw")
+file=${file//[^A-Za-z0-9._ -]/}
 progress_raw=$(query M27)
 temps=$(query M105 | grep '^T0' || true)
 
 # "SD printing byte 42/100" is already a percentage
 pct=$(sed -n 's/^SD printing byte \([0-9]*\)\/.*/\1/p' <<<"$progress_raw")
 layer=$(field Layer "$progress_raw")
+layer=${layer//[^0-9/]/}
 nozzle=$(sed -n 's/^T0:\([0-9.]*\)\/\([0-9.]*\).*/\1°\/\2°/p' <<<"$temps")
 bed=$(sed -n 's/.*B:\([0-9.]*\)\/\([0-9.]*\).*/\1°\/\2°/p' <<<"$temps")
 
@@ -64,7 +69,9 @@ mkdir -p "$STATE_DIR"
 last=$(cat "$STATE_FILE" 2>/dev/null || true)
 echo "$machine" > "$STATE_FILE"
 if [[ "$last" == "BUILDING_FROM_SD" && "$machine" != "BUILDING_FROM_SD" ]]; then
-    osascript -e "display notification \"${file:-print} is now ${machine}\" with title \"Printer\" sound name \"Glass\"" || true
+    # values go in through the environment so they are never parsed as AppleScript
+    PF_FILE="${file:-print}" PF_STATUS="$machine" osascript \
+        -e 'display notification ((system attribute "PF_FILE") & " is now " & (system attribute "PF_STATUS")) with title "Printer" sound name "Glass"' || true
 fi
 
 case "$machine" in
