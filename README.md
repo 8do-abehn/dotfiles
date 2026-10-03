@@ -231,7 +231,8 @@ bash ~/8do/dotfiles/macos/set-desktop.sh
 - Settings symlinked to `~/.claude/`
 
 ### SwiftBar Plugins
-- Claude API usage monitor (shows rate limit status in menu bar)
+- Claude Code usage: current 5-hour block cost and time to reset (via ccusage)
+- Flashforge printer status
 
 ### macOS Defaults
 - Natural scrolling disabled

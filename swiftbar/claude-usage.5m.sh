@@ -17,6 +17,10 @@ set -euo pipefail
 # than prepended so an existing PATH entry still wins.
 export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
 
+# printf needs a known locale: SwiftBar gives none (no thousands separators), and
+# a comma-decimal one like de_DE makes printf reject "32.58" and print $0,00
+export LC_ALL=en_US.UTF-8
+
 if ! command -v ccusage >/dev/null; then
     echo "✳ ?"
     echo "---"
@@ -37,24 +41,26 @@ if ! json=$(ccusage blocks --active --json --offline 2>"$err"); then
     exit 0
 fi
 
-# One tab-separated line per active block. Model names come from log files, so
-# they're reduced to safe characters before SwiftBar sees them.
+# One line per active block, fields split on the ASCII unit separator: unlike a
+# tab it isn't whitespace to `read`, so an empty field can't shift the ones after
+# it. Model names come from log files, so they're reduced to safe characters
+# before SwiftBar sees them.
 if ! block=$(jq -r '
     .blocks[0] // empty
     | [
-        .costUSD,
+        (.costUSD // 0),
         ((.endTime | sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601) - now | floor),
         (.startTime | sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601),
         (.endTime | sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601),
-        .tokenCounts.inputTokens // 0,
-        .tokenCounts.outputTokens // 0,
-        .tokenCounts.cacheCreationInputTokens // 0,
-        .tokenCounts.cacheReadInputTokens // 0,
+        (.tokenCounts.inputTokens // 0 | floor),
+        (.tokenCounts.outputTokens // 0 | floor),
+        (.tokenCounts.cacheCreationInputTokens // 0 | floor),
+        (.tokenCounts.cacheReadInputTokens // 0 | floor),
         (.burnRate.costPerHour // 0),
-        (.projection.totalCost // .costUSD),
-        (.models | map(select(. != "<synthetic>") | gsub("[^A-Za-z0-9.-]"; "")) | join(" "))
+        (.projection.totalCost // .costUSD // 0),
+        ((.models // []) | map(select(. != "<synthetic>") | gsub("[^A-Za-z0-9.-]"; "")) | join(" "))
       ]
-    | @tsv' <<<"$json" 2>/dev/null); then
+    | map(tostring) | join("\u001f")' <<<"$json" 2>/dev/null); then
     echo "✳ ! | color=red"
     echo "---"
     echo "Couldn't parse ccusage output"
@@ -70,14 +76,12 @@ if [[ -z "$block" ]]; then
     exit 0
 fi
 
-IFS=$'\t' read -r cost secs_left start end input output cache_write cache_read \
+IFS=$'\x1f' read -r cost secs_left start end input output cache_write cache_read \
     burn projected models <<<"$block"
 
-# printf rounds, and %'d adds thousands separators, but only with a real locale;
-# SwiftBar provides none, so name one here. It has to be a local variable: bash
-# ignores a locale given as a one-command prefix to its builtin printf.
+# printf rounds, and %'d adds thousands separators (thanks to LC_ALL above)
 money() { printf '$%.2f' "$1"; }
-count() { local LC_NUMERIC=en_US.UTF-8; printf "%'d" "$1"; }
+count() { printf "%'d" "$1"; }
 
 secs_left=$(( secs_left > 0 ? secs_left : 0 ))
 left="$((secs_left / 3600))h$(printf '%02d' $((secs_left % 3600 / 60)))m"

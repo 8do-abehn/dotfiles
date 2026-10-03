@@ -23,7 +23,7 @@ SwiftBar plugins for macOS menu bar widgets.
 
 ### claude-usage.5m.sh
 Shows Claude Code usage for the current 5-hour block, read from Claude Code's
-local logs (`~/.claude/projects`) by [ccusage](https://github.com/ryoppippi/ccusage).
+local logs (`~/.claude/projects`) by [ccusage](https://github.com/ccusage/ccusage).
 
 - Menu bar: `✳ $32.26 · 3h13m` (block cost so far, time until it resets), or `✳ idle`
 - Dropdown: block window, projected cost and burn rate, token breakdown, models
