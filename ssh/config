@@ -9,12 +9,18 @@ Host github.com
     AddKeysToAgent yes
     UseKeychain yes
 
+# Router - er-x-sfp
+Host 10.150.10.1
+    user adambehn
+
 # Homelab - Proxmox cluster
-Host jelly* pve* 10.150.10.* 10.150.60.*
+Host jelly* pve* dns* mem* 10.150.10.* 10.150.60.* 10.150.70.*
     User root
     IdentityFile ~/.ssh/8do
     StrictHostKeyChecking accept-new
     UserKnownHostsFile ~/.ssh/known_hosts
+
+
 
 # Add more host configurations below
 # Example:

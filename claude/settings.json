@@ -1,4 +1,7 @@
 {
+  "permissions": {
+    "defaultMode": "auto"
+  },
   "enabledPlugins": {
     "swift-lsp@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
@@ -13,5 +16,8 @@
     "claude-code-setup@claude-plugins-official": true
   },
   "alwaysThinkingEnabled": true,
-  "effortLevel": "medium"
+  "theme": "dark-daltonized",
+  "remoteControlAtStartup": true,
+  "agentPushNotifEnabled": true,
+  "skipAutoPermissionPrompt": true
 }
