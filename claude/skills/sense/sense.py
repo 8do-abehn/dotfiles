@@ -172,6 +172,9 @@ def cmd_device(sense: Senseable, args):
         d for d in rows if q in d.get("name", "").lower() and not is_deleted(d)
     ]
     if not match:
+        ghosts = [d["id"] for d in rows if q in d.get("name", "").lower()]
+        if ghosts:
+            die(f"'{args.name}' only matches deleted devices; pass an id: {', '.join(ghosts)}")
         die(f"no device matching '{args.name}'")
     if len(match) > 1:
         return {"ambiguous": [{"id": d["id"], "name": d["name"]} for d in match]}
