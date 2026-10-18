@@ -20,6 +20,7 @@ alias ...='cd ../..'
 alias brewup='brew update && brew upgrade && brew cleanup'
 alias zshconfig='${EDITOR:-nano} ~/.zshrc'
 alias zshreload='source ~/.zshrc'
+alias artsonia='~/.claude/skills/artsonia/artsonia.sh'  # save Artsonia art full size + description
 
 # macOS specific aliases
 alias showfiles='defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder'
