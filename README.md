@@ -25,7 +25,9 @@ dotfiles/
 │   └── pgp-setup.sh            # PGP key import & Git signing setup
 ├── claude/
 │   ├── CLAUDE.md               # Claude Code global instructions
-│   └── settings.json           # Claude Code settings
+│   ├── settings.json           # Claude Code settings
+│   └── skills/                 # Claude Code skills (symlinked to ~/.claude/skills)
+│       └── artsonia/           # Save kids' Artsonia art full size + description
 ├── swiftbar/
 │   ├── claude-usage.5m.sh      # Claude Code usage widget (via ccusage)
 │   ├── flashforge-printer.1m.sh # 3D printer status widget
