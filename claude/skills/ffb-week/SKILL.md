@@ -1,7 +1,7 @@
 ---
 name: ffb-week
 description: Weekly fantasy football high score post for the Yahoo league. Use when the user says /ffb-week, asks who had the high score this week, or wants the weekly FFB update for the Facebook group.
-argument-hint: "[week number | recap]"
+argument-hint: "[week number | recap | midseason]"
 allowed-tools: Bash(cat ~/.config/ffb-week/*), Bash(~/.claude/skills/ffb-week/ffb-config.sh init), Bash(pbcopy), Bash(open -a "Brave Browser" *)
 ---
 
@@ -138,6 +138,82 @@ Weekly winnings: <owner> $<total>, ... (only people with winnings, highest first
 ```
 
 Don't write to the sheet in recap mode.
+
+## Midseason mode (`/ffb-week midseason`)
+
+The regular season is 14 weeks (playoffs are weeks 15-17), so this is meant for
+after week 7 finishes. Run the normal weekly flow first if that week isn't posted
+yet; midseason itself doesn't write to the sheet.
+
+1. Get each week's high score and the winnings exactly as in recap mode.
+2. Run this with `javascript_tool` on a league page for the season awards. Set
+   `last` to the last week to include, or `0` for every finished week.
+
+```js
+const league = LEAGUE, last = 0;
+async function matchups(w) {
+  const html = await fetch('/f1/' + league + '?matchup_week=' + w + '&module=matchups&lhst=matchups',
+    {credentials: 'include'}).then(r => r.text());
+  const d = new DOMParser().parseFromString(html, 'text/html');
+  const games = [];
+  d.querySelectorAll('li.Linkable.Listitem').forEach(li => {
+    // Leaf numbers per matchup: A actual, A projected, B actual, B projected
+    const n = [...li.querySelectorAll('*')]
+      .filter(e => e.children.length === 0 && /^\d+\.\d\d$/.test(e.textContent.trim()))
+      .map(e => +e.textContent.trim());
+    const t = [...new Set([...li.querySelectorAll('a')].map(a => a.textContent.trim())
+      .filter(x => x && x !== 'View Matchup' && !/^[\d.]+$/.test(x)))];
+    games.push({w, a: {team: t[0], score: n[0], proj: n[1]}, b: {team: t[1], score: n[2], proj: n[3]}});
+  });
+  return {final: html.includes('Final results'), games};
+}
+const all = [];
+let w = 1;
+for (; w <= (last || 18); w++) { const x = await matchups(w); if (!x.final) break; all.push(...x.games); }
+const weeks = w - 1;
+const games = all.map(g => {
+  const [win, lose] = g.a.score >= g.b.score ? [g.a, g.b] : [g.b, g.a];
+  return {w: g.w, win, lose, margin: win.score - lose.score};
+});
+const sides = all.flatMap(g => [{w: g.w, ...g.a}, {w: g.w, ...g.b}]);
+const max = (arr, f) => arr.reduce((m, x) => f(x) > f(m) ? x : m);
+const blow = max(games, g => g.margin);
+const heart = max(games, g => g.lose.score);
+const over = max(sides, s => s.score - s.proj);
+const low = max(sides, s => -s.score);
+const f = x => x.toFixed(2);
+const bad = sides.length !== weeks * 14 || sides.some(s => !(s.score >= 0) || !(s.proj >= 0) || !s.team);
+['WEEKS ' + weeks + (bad ? ' PARSE CHECK FAILED' : ' ok'),
+ 'BLOWOUT | W' + blow.w + ' | ' + blow.win.team + ' ' + f(blow.win.score) + ' over ' + blow.lose.team + ' ' + f(blow.lose.score) + ' | by ' + f(blow.margin),
+ 'HEARTBREAKER | W' + heart.w + ' | ' + heart.lose.team + ' ' + f(heart.lose.score) + ' lost to ' + heart.win.team + ' ' + f(heart.win.score),
+ 'OVERACHIEVER | W' + over.w + ' | ' + over.team + ' ' + f(over.score) + ' vs proj ' + f(over.proj) + ' | +' + f(over.score - over.proj),
+ 'LOW SCORE | W' + low.w + ' | ' + low.team + ' ' + f(low.score)
+].join('\n').replace(/[=&?]/g, ' ')
+```
+
+   The awards are for the whole season so far, not one week: biggest winning
+   margin, highest score in a loss, most points over Yahoo's projection, and lowest
+   score. If two tie, name both.
+3. Map team names to owners with `owners.tsv` and write one post, copied to the
+   clipboard like step 3:
+
+```
+FFB Midseason Report - <year> (Weeks 1-<N>)
+
+Weekly high scores:
+Week 1 - <owner> - <score>
+...
+
+Midseason awards:
+💥 Biggest blowout: Week <N> - <winner> beat <loser> by <margin> (<score> to <score>)
+😬 Heartbreaker: Week <N> - <loser> scored <score> and still lost to <winner>
+🚀 Overachiever: Week <N> - <owner> scored <score>, <diff> over projection
+🚽 Low score: Week <N> - <owner> - <score>
+
+Weekly winnings: <owner> $<total>, ... (only people with winnings, highest first)
+```
+
+If a margin is under 1 point, say so in the heartbreaker line (e.g. "lost by 0.12").
 
 ## Config backup
 
