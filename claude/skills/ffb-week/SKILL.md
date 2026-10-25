@@ -134,7 +134,7 @@ Week 1 - <owner> - <score>
 ...
 Most weekly wins: <owner> (<n>)
 Season high: Week <N> - <owner> - <score>
-Weekly winnings: <owner> $<total>, ... (only people above $0, highest first)
+Weekly winnings: <owner> $<total>, ... (only people with winnings, highest first)
 ```
 
 Don't write to the sheet in recap mode.
