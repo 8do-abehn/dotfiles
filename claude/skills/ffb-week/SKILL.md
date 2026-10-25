@@ -7,8 +7,9 @@ allowed-tools: Bash(cat ~/.config/ffb-week/*), Bash(pbcopy), Bash(open -a "Brave
 
 # Weekly FFB high score
 
-Finds the week's high score in the Yahoo league and writes the Facebook post in
-Adam's usual one-line style. The league ID, group URL and owner names live in
+Finds the week's high score in the Yahoo league, writes the Facebook post in
+Adam's usual one-line style, and records the weekly payout in the season's Google
+Sheet. The league ID, group URL, sheet ID and owner names live in
 `~/.config/ffb-week/`, not in this repo, because the dotfiles repo is public.
 
 ## 1. Load the local config
@@ -17,7 +18,8 @@ Adam's usual one-line style. The league ID, group URL and owner names live in
 cat ~/.config/ffb-week/config.env ~/.config/ffb-week/owners.tsv
 ```
 
-- `config.env` has `YAHOO_LEAGUE_ID` and `FB_GROUP_URL`.
+- `config.env` has `YAHOO_LEAGUE_ID`, `FB_GROUP_URL`, `SHEET_ID` (this season's
+  "FFB - Draft Party 'YY" sheet) and `WEEKLY_PAYOUT` (dollars per weekly win).
 - `owners.tsv` maps the Yahoo team name to the name used in the post. Lines starting
   with `#` are comments. If a team is missing, use the Yahoo manager name and tell
   the user so they can add it.
@@ -90,9 +92,34 @@ open -a "Brave Browser" "<FB_GROUP_URL>"
 Then show the user the post text, the runner-up and the low score (for any
 trash talk they want to add), and tell them it's on the clipboard.
 
+## 4. Record the payout in the sheet
+
+The sheet's **Payout** tab has one row per manager (column A = full name, B = team
+name, C = Total) and one column per week: week 1 is column D, week N is the column
+N-1 letters after D (D=1, E=2 ... Q=14). The weekly winner gets `WEEKLY_PAYOUT` in
+their row under that week. Total and the owed columns are formulas, so don't touch
+them.
+
+1. Read the tab first: Drive `download_file_content` with
+   `exportMimeType: "text/csv"` exports the first tab, which is Payout. Find the
+   winner's row by the full name from `owners.tsv`. Rows start at 3.
+2. If that week's column already has a value in any row, stop and show it; the week
+   was already recorded.
+3. Write the cell. With the Google Sheets connector, write the value directly
+   (read the google-workspace skill first). Without it, use Claude in Chrome: open
+   `https://docs.google.com/spreadsheets/d/<SHEET_ID>/edit`, click the Name Box (the
+   cell-address box left of the formula bar), type the cell (e.g. `I11`), Enter,
+   type the amount, Enter.
+4. Export the CSV again and check that the cell and the winner's Total changed.
+
+If column B has a team name that doesn't match Yahoo (teams get renamed each
+season), mention it and offer to fix it. Typing over a team name drops its link.
+
 ## Rules
 
 - Never post to Facebook yourself. Adam pastes it and clicks Post.
+- Writing the weekly payout to the sheet is part of the command; don't edit any
+  other cells unless Adam asks.
 - Read-only on Yahoo: don't click anything in the league, only read pages.
 - Don't save owner emails anywhere. Yahoo's Managers page shows them; they aren't
   needed.
