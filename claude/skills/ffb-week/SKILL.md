@@ -1,8 +1,8 @@
 ---
 name: ffb-week
 description: Weekly fantasy football high score post for the Yahoo league. Use when the user says /ffb-week, asks who had the high score this week, or wants the weekly FFB update for the Facebook group.
-argument-hint: "[week number]"
-allowed-tools: Bash(cat ~/.config/ffb-week/*), Bash(pbcopy), Bash(open -a "Brave Browser" *)
+argument-hint: "[week number | recap]"
+allowed-tools: Bash(cat ~/.config/ffb-week/*), Bash(~/.claude/skills/ffb-week/ffb-config.sh init), Bash(pbcopy), Bash(open -a "Brave Browser" *)
 ---
 
 # Weekly FFB high score
@@ -24,7 +24,11 @@ cat ~/.config/ffb-week/config.env ~/.config/ffb-week/owners.tsv
   with `#` are comments. If a team is missing, use the Yahoo manager name and tell
   the user so they can add it.
 
-If the config is missing, stop and ask the user for the league ID and group URL.
+If the config is missing, run `~/.claude/skills/ffb-week/ffb-config.sh init` to
+create it from the templates, then ask the user to restore it from Bitwarden
+(`ffb-config.sh restore`, which they run after `bw unlock`) or to give you the
+league ID, group URL and sheet ID. A new season needs a new `SHEET_ID` and
+`YAHOO_LEAGUE_ID`; check both in August.
 
 ## 2. Read the scores from Yahoo (Claude in Chrome)
 
@@ -114,6 +118,39 @@ them.
 
 If column B has a team name that doesn't match Yahoo (teams get renamed each
 season), mention it and offer to fix it. Typing over a team name drops its link.
+
+## Recap mode (`/ffb-week recap`)
+
+For an end-of-season (or any time) summary instead of a single week:
+
+1. Run the step 2 snippet once per finished week (or loop `week(w)` over 1..N in
+   one call) and keep each week's top score.
+2. Export the Payout tab (step 4) and read each manager's Total in column C.
+3. Write one post, copied to the clipboard like step 3:
+
+```
+FFB High Scores - <year> season so far
+Week 1 - <owner> - <score>
+...
+Most weekly wins: <owner> (<n>)
+Season high: Week <N> - <owner> - <score>
+Weekly winnings: <owner> $<total>, ... (only people above $0, highest first)
+```
+
+Don't write to the sheet in recap mode.
+
+## Config backup
+
+The local config isn't in git. After changing it, remind Adam to back it up himself
+(the vault needs his unlock):
+
+```
+bw unlock   # then export the BW_SESSION it prints
+~/.claude/skills/ffb-week/ffb-config.sh backup
+```
+
+`restore` writes both files back on a new machine. Never run `bw unlock` or handle
+the master password yourself.
 
 ## Rules
 
