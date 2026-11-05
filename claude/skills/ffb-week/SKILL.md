@@ -40,15 +40,17 @@ for, or `0` for the latest finished week.
 
 ```js
 const league = LEAGUE, want = WEEK;
+const base = '/f1/' + league;  // a past season: '/YYYY/f1/' + that season's league ID
 async function week(w) {
-  const html = await fetch('/f1/' + league + '?matchup_week=' + w + '&module=matchups&lhst=matchups',
+  const html = await fetch(base + '?matchup_week=' + w + '&module=matchups&lhst=matchups',
     {credentials: 'include'}).then(r => r.text());
   const d = new DOMParser().parseFromString(html, 'text/html');
   const rows = [];
   d.querySelectorAll('li.Linkable.Listitem').forEach(li => {
     // Leaf numbers per matchup: team A actual, A projected, team B actual, B projected
+    // (2007-2011 scored whole numbers, and a bad week can go negative)
     const n = [...li.querySelectorAll('*')]
-      .filter(e => e.children.length === 0 && /^\d+\.\d\d$/.test(e.textContent.trim()))
+      .filter(e => e.children.length === 0 && /^-?\d+(\.\d+)?$/.test(e.textContent.trim()))
       .map(e => +e.textContent.trim());
     const t = [...new Set([...li.querySelectorAll('a')].map(a => a.textContent.trim())
       .filter(x => x && x !== 'View Matchup' && !/^[\d.]+$/.test(x)))];
@@ -65,6 +67,12 @@ else { for (w = 1; w <= 18; w++) { const x = await week(w); if (!x.final) break;
   r.rows.map(x => x.team + ' | ' + x.score + ' | vs ' + x.opp + ' ' + x.oppScore).join('\n'))
   .replace(/[=&?]/g, ' ')
 ```
+
+Fetch Yahoo pages one at a time, as these loops do. Never fire many at once
+(`Promise.all` over weeks or seasons): Yahoo answers with status 999 and blocks
+the user's own signed-in session for up to an hour. For a big pull, such as
+several seasons, wait 5 seconds between requests, and stop for 30 minutes if a
+999 comes back.
 
 Close the tab when done. If the asked-for week is NOT FINAL, say so and stop
 (Monday night games or stat corrections can still change it).
@@ -151,15 +159,17 @@ yet; midseason itself doesn't write to the sheet.
 
 ```js
 const league = LEAGUE, last = 0;
+const base = '/f1/' + league;  // a past season: '/YYYY/f1/' + that season's league ID
 async function matchups(w) {
-  const html = await fetch('/f1/' + league + '?matchup_week=' + w + '&module=matchups&lhst=matchups',
+  const html = await fetch(base + '?matchup_week=' + w + '&module=matchups&lhst=matchups',
     {credentials: 'include'}).then(r => r.text());
   const d = new DOMParser().parseFromString(html, 'text/html');
   const games = [];
   d.querySelectorAll('li.Linkable.Listitem').forEach(li => {
     // Leaf numbers per matchup: A actual, A projected, B actual, B projected
+    // (2007-2011 scored whole numbers, and a bad week can go negative)
     const n = [...li.querySelectorAll('*')]
-      .filter(e => e.children.length === 0 && /^\d+\.\d\d$/.test(e.textContent.trim()))
+      .filter(e => e.children.length === 0 && /^-?\d+(\.\d+)?$/.test(e.textContent.trim()))
       .map(e => +e.textContent.trim());
     const t = [...new Set([...li.querySelectorAll('a')].map(a => a.textContent.trim())
       .filter(x => x && x !== 'View Matchup' && !/^[\d.]+$/.test(x)))];
@@ -182,7 +192,7 @@ const heart = max(games, g => g.lose.score);
 const over = max(sides, s => s.score - s.proj);
 const low = max(sides, s => -s.score);
 const f = x => x.toFixed(2);
-const bad = sides.length !== weeks * 14 || sides.some(s => !(s.score >= 0) || !(s.proj >= 0) || !s.team);
+const bad = sides.length !== weeks * 14 || sides.some(s => !Number.isFinite(s.score) || !Number.isFinite(s.proj) || !s.team);
 ['WEEKS ' + weeks + (bad ? ' PARSE CHECK FAILED' : ' ok'),
  'BLOWOUT | W' + blow.w + ' | ' + blow.win.team + ' ' + f(blow.win.score) + ' over ' + blow.lose.team + ' ' + f(blow.lose.score) + ' | by ' + f(blow.margin),
  'HEARTBREAKER | W' + heart.w + ' | ' + heart.lose.team + ' ' + f(heart.lose.score) + ' lost to ' + heart.win.team + ' ' + f(heart.win.score),
