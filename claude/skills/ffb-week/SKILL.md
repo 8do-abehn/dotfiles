@@ -28,7 +28,10 @@ If the config is missing, run `~/.claude/skills/ffb-week/ffb-config.sh init` to
 create it from the templates, then ask the user to restore it from Bitwarden
 (`ffb-config.sh restore`, which they run after `bw unlock`) or to give you the
 league ID, group URL and sheet ID. A new season needs a new `SHEET_ID` and
-`YAHOO_LEAGUE_ID`; check both in August.
+`YAHOO_LEAGUE_ID`; check both in August. When the league ID changes, also relink
+the team names in the Payout tab's column B (see step 4): they point at
+`/f1/<league>/<team #>`, and last season's links open Yahoo's "There was a
+problem" page.
 
 ## 2. Read the scores from Yahoo (Claude in Chrome)
 
@@ -59,9 +62,18 @@ async function week(w) {
   });
   return {final: html.includes('Final results'), rows: rows.sort((a, b) => b.score - a.score)};
 }
+const pause = () => new Promise(s => setTimeout(s, 5000));
 let w = want, r;
 if (w) { r = await week(w); }
-else { for (w = 1; w <= 18; w++) { const x = await week(w); if (!x.final) break; r = x; } w -= 1; }
+else {
+  // Guess the latest finished week from the date (week 1 ends mid-September), then
+  // step a week at a time, so it's 2-3 paced fetches instead of a walk from week 1
+  const now = new Date(), sep1 = new Date(now.getFullYear() - (now.getMonth() < 2), 8, 1);
+  w = Math.min(18, Math.max(1, Math.floor((now - sep1) / 864e5 / 7) - 1));
+  r = await week(w);
+  while (r.final && w < 18) { await pause(); const x = await week(w + 1); if (!x.final) break; w++; r = x; }
+  while (!r.final && w > 1) { await pause(); w--; r = await week(w); }
+}
 // The extension blocks output that looks like query strings, so keep = & ? out of it
 ('WEEK ' + w + (r.final ? ' FINAL' : ' NOT FINAL') + '\n' +
   r.rows.map(x => x.team + ' | ' + x.score + ' | vs ' + x.opp + ' ' + x.oppScore).join('\n'))
@@ -119,13 +131,26 @@ them.
    was already recorded.
 3. Write the cell. With the Google Sheets connector, write the value directly
    (read the google-workspace skill first). Without it, use Claude in Chrome: open
-   `https://docs.google.com/spreadsheets/d/<SHEET_ID>/edit`, click the Name Box (the
+   `https://docs.google.com/spreadsheets/d/<SHEET_ID>/edit`, wait about 5 seconds
+   and take a screenshot to confirm the grid has loaded (a click while it loads
+   lands on the Sheets home logo and leaves the file), then click the Name Box (the
    cell-address box left of the formula bar), type the cell (e.g. `I11`), Enter,
    type the amount, Enter.
 4. Export the CSV again and check that the cell and the winner's Total changed.
+5. Close the tab. If Chrome refuses because the page asks to confirm leaving,
+   Sheets is still saving: wait a few seconds and retry, or leave it open and tell
+   the user.
 
 If column B has a team name that doesn't match Yahoo (teams get renamed each
 season), mention it and offer to fix it. Typing over a team name drops its link.
+
+Each team name in column B links to that team's Yahoo page,
+`https://football.fantasysports.yahoo.com/f1/<YAHOO_LEAGUE_ID>/<team #>`. Get the
+team numbers from the league page's own links (`a[href]` ending in
+`/f1/<league>/<n>`, read with `javascript_tool`). To set a link without changing
+the text: select the cell with the Name Box, press Cmd+K, type the URL, Enter.
+To read a link's URL, open Cmd+K on the cell and read the inputs' values with
+`javascript_tool`; the cell text and the CSV export don't include it.
 
 ## Recap mode (`/ffb-week recap`)
 
