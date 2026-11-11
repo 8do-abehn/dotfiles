@@ -148,9 +148,27 @@ Each team name in column B links to that team's Yahoo page,
 `https://football.fantasysports.yahoo.com/f1/<YAHOO_LEAGUE_ID>/<team #>`. Get the
 team numbers from the league page's own links (`a[href]` ending in
 `/f1/<league>/<n>`, read with `javascript_tool`). To set a link without changing
-the text: select the cell with the Name Box, press Cmd+K, type the URL, Enter.
-To read a link's URL, open Cmd+K on the cell and read the inputs' values with
-`javascript_tool`; the cell text and the CSV export don't include it.
+the text: select the cell with the Name Box, press Cmd+K, type the URL, wait a
+second, Enter. On a cell with no link, Cmd+K focuses the URL field. On a cell that
+already has one it focuses the text field, so focus the URL field with
+`javascript_tool` before typing:
+
+```js
+const u = [...document.querySelectorAll('input')]
+  .find(i => i.offsetParent && i.value.includes('fantasysports'));
+if (u) { u.focus(); u.select(); }
+u ? 'FOCUSED' : 'NO URL INPUT'
+```
+
+Never click the URL field by screen position: the editor opens below the cell
+or at the top of the screen depending on the row, and a missed click sends the
+typed URL into a cell (it overwrote three team names and two blank cells once).
+Old links can point to several past leagues, not just last season's.
+
+To read a link's URL, open Cmd+K on the cell and read the visible inputs' values
+with `javascript_tool`; the cell text and the CSV export don't include it. After
+link work, export the CSV and compare it with the first export to catch any
+stray typing.
 
 ## Recap mode (`/ffb-week recap`)
 
