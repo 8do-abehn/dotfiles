@@ -26,6 +26,8 @@ dotfiles/
 ├── claude/
 │   ├── CLAUDE.md               # Claude Code global instructions
 │   ├── settings.json           # Claude Code settings
+│   ├── mcp/                    # Local MCP servers (symlinked to ~/.claude/mcp)
+│   │   └── local_llm.py        # Delegate work to the homelab Ollama model
 │   └── skills/                 # Claude Code skills (symlinked to ~/.claude/skills)
 │       └── artsonia/           # Save kids' Artsonia art full size + description
 ├── swiftbar/
@@ -231,6 +233,18 @@ bash ~/8do/dotfiles/macos/set-desktop.sh
 ### Claude Code
 - Global instructions in `CLAUDE.md`
 - Settings symlinked to `~/.claude/`
+- `local-llm` MCP server (`claude/mcp/local_llm.py`): lets Claude hand private
+  or bulk work to the homelab's local Ollama model. Tools: `ask`,
+  `ask_about_file` (the file goes only to the local model), `models`.
+  Runs with `uv run --script`, so its dependencies need no install step.
+  Register it once per machine, with your own Ollama URL:
+
+  ```bash
+  claude mcp add --scope user local-llm -e LOCAL_LLM_URL=https://ollama.<your-tailnet>.ts.net -- ~/.claude/mcp/local_llm.py
+  ```
+
+  Optional: `-e LOCAL_LLM_MODEL=...` (default `mimo-v2.6:9b`),
+  `-e LOCAL_LLM_CTX=...` (default 8192 tokens).
 
 ### SwiftBar Plugins
 - Claude Code usage: current 5-hour block cost and time to reset (via ccusage)
