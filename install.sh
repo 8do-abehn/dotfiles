@@ -71,6 +71,10 @@ if [[ -d "$HOME/.claude/skills" ]] && [[ ! -L "$HOME/.claude/skills" ]]; then
 fi
 ln -sfn "$DOTFILES_DIR/claude/skills" "$HOME/.claude/skills"
 
+# Local MCP servers. Registering them stays a manual step (see README),
+# because the server URLs are private and this repo is public.
+ln -sfn "$DOTFILES_DIR/claude/mcp" "$HOME/.claude/mcp"
+
 echo ""
 
 # Install Homebrew packages
