@@ -29,7 +29,8 @@ dotfiles/
 │   ├── mcp/                    # Local MCP servers (symlinked to ~/.claude/mcp)
 │   │   └── local_llm.py        # Delegate work to the homelab Ollama model
 │   └── skills/                 # Claude Code skills (symlinked to ~/.claude/skills)
-│       └── artsonia/           # Save kids' Artsonia art full size + description
+│       ├── artsonia/           # Save kids' Artsonia art full size + description
+│       └── jellyfin-kids/      # What the kids can watch on Jellyfin: audit, rate, re-apply
 ├── swiftbar/
 │   ├── claude-usage.5m.sh      # Claude Code usage widget (via ccusage)
 │   ├── flashforge-printer.1m.sh # 3D printer status widget
